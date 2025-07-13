@@ -1,58 +1,62 @@
 package tobyspring.splearn.domain;
 
+import static java.util.Objects.requireNonNull;
+import static org.springframework.util.Assert.state;
+
 import lombok.Getter;
 import lombok.ToString;
-import org.springframework.lang.NonNull;
-import org.springframework.lang.Nullable;
-
-import java.util.Objects;
-
-import static org.springframework.util.Assert.state;
 
 @Getter
 @ToString
 public class Member {
-    private String email;
 
-    private String nickname;
+	private Email email;
 
-    private String passwordHash;
+	private String nickname;
 
-    private MemberStatus status;
+	private String passwordHash;
 
-    private Member(String email, String nickname, String passwordHash) {
-        this.email = Objects.requireNonNull(email);
-        this.nickname = Objects.requireNonNull(nickname);
-        this.passwordHash = Objects.requireNonNull(passwordHash);
+	private MemberStatus status;
 
-        this.status = MemberStatus.PENDING;
-    }
+	private Member() {
+	}
 
-    public static Member create(String email, String nickname, String password, PasswordEncoder passwordEncoder) {
-        return new Member(email, nickname, passwordEncoder.encode(password));
-    }
+	public static Member create(MemberCreateRequest createRequest, PasswordEncoder passwordEncoder) {
+		Member member = new Member();
 
-    public void activate() {
-        state(status == MemberStatus.PENDING, "PENDING 상태가 아닙니다");
+		member.email = new Email(createRequest.email());
+		member.nickname = requireNonNull(createRequest.nickname());
+		member.passwordHash = passwordEncoder.encode(requireNonNull(createRequest.password()));
 
-        this.status = MemberStatus.ACTIVE;
-    }
+		member.status = MemberStatus.PENDING;
+		return member;
+	}
 
-    public void deactivate() {
-        state(status == MemberStatus.ACTIVE, "ACTIVE 상태가 아닙니다");
+	public void activate() {
+		state(status == MemberStatus.PENDING, "PENDING 상태가 아닙니다");
 
-        this.status = MemberStatus.DEACTIVATED;
-    }
+		this.status = MemberStatus.ACTIVE;
+	}
 
-    public boolean verifyPassword(String password, PasswordEncoder passwordEncoder) {
-        return passwordEncoder.matches(password, this.passwordHash);
-    }
+	public void deactivate() {
+		state(status == MemberStatus.ACTIVE, "ACTIVE 상태가 아닙니다");
 
-    public void changeNickname(String nickname) {
-        this.nickname = nickname;
-    }
+		this.status = MemberStatus.DEACTIVATED;
+	}
 
-    public void changePassword(String password, PasswordEncoder passwordEncoder) {
-        this.passwordHash = passwordEncoder.encode(password);
-    }
+	public boolean verifyPassword(String password, PasswordEncoder passwordEncoder) {
+		return passwordEncoder.matches(password, this.passwordHash);
+	}
+
+	public void changeNickname(String nickname) {
+		this.nickname = requireNonNull(nickname);
+	}
+
+	public void changePassword(String password, PasswordEncoder passwordEncoder) {
+		this.passwordHash = passwordEncoder.encode(requireNonNull(password));
+	}
+
+	public boolean isActive() {
+		return status == MemberStatus.ACTIVE;
+	}
 }
