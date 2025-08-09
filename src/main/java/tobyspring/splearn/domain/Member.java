@@ -3,13 +3,7 @@ package tobyspring.splearn.domain;
 import static java.util.Objects.requireNonNull;
 import static org.springframework.util.Assert.state;
 
-import jakarta.persistence.Embedded;
 import jakarta.persistence.Entity;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -19,16 +13,11 @@ import org.hibernate.annotations.NaturalIdCache;
 
 @Entity
 @Getter
-@ToString
+@ToString(callSuper = true)
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @NaturalIdCache
-public class Member {
+public class Member extends AbstractEntity {
 
-	@Id
-	@GeneratedValue(strategy = GenerationType.IDENTITY)
-	private Long id;
-
-	@Embedded
 	@NaturalId
 	private Email email;
 
@@ -36,7 +25,6 @@ public class Member {
 
 	private String passwordHash;
 
-	@Enumerated(value = EnumType.STRING)
 	private MemberStatus status;
 
 
